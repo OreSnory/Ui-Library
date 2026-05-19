@@ -161,7 +161,7 @@ function UiLibrary:Window(Config)
 	UIListLayout.Parent = Tabs
 
 	function Window:Tab(Config)
-
+		
 		local Tab = Instance.new("TextButton")
 		Tab.Name = "Tab"
 		Tab.Size = UDim2.new(1, 0, 0, 25)
@@ -181,14 +181,12 @@ function UiLibrary:Window(Config)
 		UICorner5.Parent = Tab
 
 		Tab.MouseButton1Click:Connect(function()
-
 			if CurrentTab then
 				CurrentTab.BackgroundColor3 = Color3.new(0.156863, 0.156863, 0.156863)
 			end
 
 			Tab.BackgroundColor3 = Color3.new(0.509804, 0.705882, 1)
 			CurrentTab = Tab
-
 		end)
 
 		if not CurrentTab then
