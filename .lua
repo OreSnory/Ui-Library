@@ -50,12 +50,10 @@ function UiLibrary:CreateWindow(Config)
 	Main.Size = Config.Size or UDim2.new(0, 650, 0, 400)
 	Main.BackgroundColor3 = Color3.new(0.105882, 0.105882, 0.105882)
 	Main.BorderSizePixel = 0
-	Main.BorderColor3 = Color3.new(0, 0, 0)
 	Main.AnchorPoint = Vector2.new(0.5, 0.5)
 	Main.Parent = Ui_Library
 
 	local UICorner = Instance.new("UICorner")
-	UICorner.Name = "UICorner"
 	UICorner.CornerRadius = UDim.new(0, 5)
 	UICorner.Parent = Main
 
@@ -64,11 +62,9 @@ function UiLibrary:CreateWindow(Config)
 	TopBar.Size = UDim2.new(1, 0, 0, 35)
 	TopBar.BackgroundColor3 = Color3.new(0.156863, 0.156863, 0.156863)
 	TopBar.BorderSizePixel = 0
-	TopBar.BorderColor3 = Color3.new(0, 0, 0)
 	TopBar.Parent = Main
 
 	local UICorner2 = Instance.new("UICorner")
-	UICorner2.Name = "UICorner"
 	UICorner2.CornerRadius = UDim.new(0, 5)
 	UICorner2.Parent = TopBar
 
@@ -78,18 +74,14 @@ function UiLibrary:CreateWindow(Config)
 	Extension.Size = UDim2.new(1, 0, 0.5, 0)
 	Extension.BackgroundColor3 = Color3.new(0.156863, 0.156863, 0.156863)
 	Extension.BorderSizePixel = 0
-	Extension.BorderColor3 = Color3.new(0, 0, 0)
 	Extension.AnchorPoint = Vector2.new(0, 1)
 	Extension.Parent = TopBar
 
 	local TextLabel = Instance.new("TextLabel")
-	TextLabel.Name = "TextLabel"
+	TextLabel.Name = "Title"
 	TextLabel.Size = UDim2.new(1, 0, 1, 0)
-	TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
 	TextLabel.BackgroundTransparency = 1
-	TextLabel.BorderSizePixel = 0
-	TextLabel.BorderColor3 = Color3.new(0, 0, 0)
-	TextLabel.Text = Config.Name
+	TextLabel.Text = Config.Name or "Window"
 	TextLabel.TextColor3 = Color3.new(0.509804, 0.705882, 1)
 	TextLabel.TextSize = 20
 	TextLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
@@ -97,11 +89,23 @@ function UiLibrary:CreateWindow(Config)
 	TextLabel.Parent = TopBar
 
 	local UIPadding = Instance.new("UIPadding")
-	UIPadding.Name = "UIPadding"
 	UIPadding.PaddingLeft = UDim.new(0, 10)
 	UIPadding.Parent = TextLabel
-	
+
 	MakeDraggable(TopBar, Main)
+
+	Window.Instance = Ui_Library
+	Window.Main = Main
+	Window.TopBar = TopBar
+	Window.Title = TextLabel
+
+	function Window:SetTitle(Text)
+		self.Title.Text = Text
+	end
+
+	function Window:Destroy()
+		self.Instance:Destroy()
+	end
 
 	return Window
 end
