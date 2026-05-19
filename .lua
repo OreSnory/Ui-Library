@@ -1,113 +1,109 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local UserInputService = game:GetService("UserInputService")
 
-local Window = Rayfield:CreateWindow({
-   Name = "Slime RNG - マリン",
-   --ScriptID = "sid_8sjmcfk70kuj",
-   LoadingTitle = "Slime RNG Script",
-   LoadingSubtitle = "By マリン",
-   ShowText = "マリン",
+local function MakeDraggable(TopBar, Frame)
+	local Dragging = false
+	local DragStart
+	local StartPos
 
-   ToggleUIKeybind = "K",
+	TopBar.InputBegan:Connect(function(Input)
+		if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+			Dragging = true
+			DragStart = Input.Position
+			StartPos = Frame.Position
+		end
+	end)
 
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil,
-      FileName = "Slime RNG - マリン"
-   },
+	TopBar.InputEnded:Connect(function(Input)
+		if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+			Dragging = false
+		end
+	end)
 
-   Discord = {
-      Enabled = true,
-      Invite = "zHFNDBRWZB",
-      RememberJoins = true
-   },
-   
-})
+	UserInputService.InputChanged:Connect(function(Input)
+		if not Dragging then return end
+		if Input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
 
-local Main = Window:CreateTab("Main")
+		local delta = Input.Position - DragStart
 
-local Section = Main:CreateSection("AutoFarm")
+		Frame.Position = UDim2.new(
+			StartPos.X.Scale,
+			StartPos.X.Offset + delta.X,
+			StartPos.Y.Scale,
+			StartPos.Y.Offset + delta.Y
+		)
+	end)
+end
 
--- Services
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UiLibrary = {}
 
--- Variables
-local LocalPlayer = Players.LocalPlayer
-local RollCoolDown = LocalPlayer.PlayerGui.Root.BottomBarStats.StatsList.RollSpeedStat.Content.Value.TextLabel.Text:match("[%d%.]+")
+function UiLibrary:CreateWindow(Config)
+	local Window = {}
 
--- Modules
-local client = require(ReplicatedStorage.Packages.DataService).client
-local UpgradeTree = require(ReplicatedStorage.Source.Features.Upgrades.UpgradeTree)
-local UpgradeUtils = require(ReplicatedStorage.Source.Features.Upgrades.UpgradeServiceUtils)
+	local Ui_Library = Instance.new("ScreenGui")
+	Ui_Library.Name = "Ui Library"
+	Ui_Library.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	Ui_Library.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Remotes
-local Roll = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("leifstout_networker@0.3.1"):WaitForChild("networker"):WaitForChild("_remotes"):WaitForChild("RollService"):WaitForChild("RemoteFunction")
-local EquipBest = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("leifstout_networker@0.3.1"):WaitForChild("networker"):WaitForChild("_remotes"):WaitForChild("InventoryService"):WaitForChild("RemoteFunction")
-local BuyUpgrade = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("leifstout_networker@0.3.1"):WaitForChild("networker"):WaitForChild("_remotes"):WaitForChild("UpgradeService"):WaitForChild("RemoteFunction")
+	local Main = Instance.new("Frame")
+	Main.Name = "Main"
+	Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+	Main.Size = Config.Size or UDim2.new(0, 650, 0, 400)
+	Main.BackgroundColor3 = Color3.new(0.105882, 0.105882, 0.105882)
+	Main.BorderSizePixel = 0
+	Main.BorderColor3 = Color3.new(0, 0, 0)
+	Main.AnchorPoint = Vector2.new(0.5, 0.5)
+	Main.Parent = Ui_Library
 
-local Toggle = Main:CreateToggle({
-    Name = "Auto Roll",
-    CurrentValue = false,
-    Flag = "AutoRoll",
-    Callback = function(Value)
-        AutoRoll = Value
+	local UICorner = Instance.new("UICorner")
+	UICorner.Name = "UICorner"
+	UICorner.CornerRadius = UDim.new(0, 5)
+	UICorner.Parent = Main
 
-        if AutoRoll then
-            task.spawn(function()
-                while AutoRoll do
-                    Roll:InvokeServer("requestRoll")
-                    task.wait(RollCoolDown)
-                end
-            end)
-        end
-    end
-})
+	local TopBar = Instance.new("Frame")
+	TopBar.Name = "TopBar"
+	TopBar.Size = UDim2.new(1, 0, 0, 35)
+	TopBar.BackgroundColor3 = Color3.new(0.156863, 0.156863, 0.156863)
+	TopBar.BorderSizePixel = 0
+	TopBar.BorderColor3 = Color3.new(0, 0, 0)
+	TopBar.Parent = Main
 
-local AutoEquipBestConn
+	local UICorner2 = Instance.new("UICorner")
+	UICorner2.Name = "UICorner"
+	UICorner2.CornerRadius = UDim.new(0, 5)
+	UICorner2.Parent = TopBar
 
-Main:CreateToggle({
-    Name = "Auto Equip Best",
-    CurrentValue = false,
-    Flag = "AutoEquipBest",
-    Callback = function(Value)
-        AutoEquipBest = Value
+	local Extension = Instance.new("Frame")
+	Extension.Name = "Extension"
+	Extension.Position = UDim2.new(0, 0, 1, 0)
+	Extension.Size = UDim2.new(1, 0, 0.5, 0)
+	Extension.BackgroundColor3 = Color3.new(0.156863, 0.156863, 0.156863)
+	Extension.BorderSizePixel = 0
+	Extension.BorderColor3 = Color3.new(0, 0, 0)
+	Extension.AnchorPoint = Vector2.new(0, 1)
+	Extension.Parent = TopBar
 
-        if AutoEquipBest then
-            AutoEquipBestConn = LocalPlayer:GetAttributeChangedSignal("NumRolls"):Connect(function()
-                EquipBest:InvokeServer("requestEquipBest")
-            end)
-        else
-            if AutoEquipBestConn then
-                AutoEquipBestConn:Disconnect()
-                AutoEquipBestConn = nil
-            end
-        end
-    end
-})
+	local TextLabel = Instance.new("TextLabel")
+	TextLabel.Name = "TextLabel"
+	TextLabel.Size = UDim2.new(1, 0, 1, 0)
+	TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+	TextLabel.BackgroundTransparency = 1
+	TextLabel.BorderSizePixel = 0
+	TextLabel.BorderColor3 = Color3.new(0, 0, 0)
+	TextLabel.Text = Config.Name
+	TextLabel.TextColor3 = Color3.new(0.509804, 0.705882, 1)
+	TextLabel.TextSize = 20
+	TextLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+	TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+	TextLabel.Parent = TopBar
 
-local Toggle = Main:CreateToggle({
-    Name = "Auto Buy Upgrades",
-    CurrentValue = false,
-    Flag = "AutoBuyUpgrades",
-    Callback = function(Value)
-        AutoBuyUpgrades = Value
+	local UIPadding = Instance.new("UIPadding")
+	UIPadding.Name = "UIPadding"
+	UIPadding.PaddingLeft = UDim.new(0, 10)
+	UIPadding.Parent = TextLabel
+	
+	MakeDraggable(TopBar, Main)
 
-        if AutoBuyUpgrades then
-            task.spawn(function()
-                while AutoBuyUpgrades do
-                    for _, Upgrades in next, UpgradeTree do
-                        for _, Tiles in next, Upgrades do
-                            if Tiles.cost and not UpgradeUtils.ownsUpgrade(Tiles.id, client:get("upgrades") or {}) and (client:get()[Tiles.cost.currency] or 0) >= Tiles.cost.amount then
-                                BuyUpgrade:InvokeServer("requestUnlock", Tiles.id)
-                                task.wait(1)
-                            end
-                        end
-                    end
-                    task.wait(1)
-                end
-            end)
-        end
-    end
-})
+	return Window
+end
 
-Rayfield:LoadConfiguration()
+return UiLibrary
