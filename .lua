@@ -1,4 +1,5 @@
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local function MakeDraggable(TopBar, Frame)
 	local Dragging = false
@@ -36,9 +37,10 @@ end
 
 local UiLibrary = {}
 
-function UiLibrary:CreateWindow(Config)
+function UiLibrary:Window(Config)
 	local Window = {}
 
+	-- Main Ui
 	local Ui_Library = Instance.new("ScreenGui")
 	Ui_Library.Name = "Ui Library"
 	Ui_Library.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -104,7 +106,7 @@ function UiLibrary:CreateWindow(Config)
 	local TabHolder = Instance.new("Frame")
 	TabHolder.Name = "TabHolder"
 	TabHolder.Position = UDim2.new(0, 7, 0, 42)
-	TabHolder.Size = UDim2.new(0, 175, 1, -49)
+	TabHolder.Size = UDim2.new(0, 200, 1, -49)
 	TabHolder.BackgroundColor3 = Color3.new(0.156863, 0.156863, 0.156863)
 	TabHolder.BorderSizePixel = 0
 	TabHolder.BorderColor3 = Color3.new(0, 0, 0)
@@ -114,6 +116,16 @@ function UiLibrary:CreateWindow(Config)
 	UICorner3.Name = "UICorner"
 	UICorner3.CornerRadius = UDim.new(0, 4)
 	UICorner3.Parent = TabHolder
+
+	local Tabs = Instance.new("Frame")
+	Tabs.Name = "Tabs"
+	Tabs.Position = UDim2.new(0, 10, 0, 35)
+	Tabs.Size = UDim2.new(1, -20, 1, -45)
+	Tabs.BackgroundColor3 = Color3.new(1, 1, 1)
+	Tabs.BackgroundTransparency = 1
+	Tabs.BorderSizePixel = 0
+	Tabs.BorderColor3 = Color3.new(0, 0, 0)
+	Tabs.Parent = TabHolder
 
 	local GameName = Instance.new("TextLabel")
 	GameName.Name = "GameName"
@@ -134,22 +146,61 @@ function UiLibrary:CreateWindow(Config)
 	UIPadding2.PaddingLeft = UDim.new(0, 10)
 	UIPadding2.Parent = GameName
 	
-	Window.Instance = Ui_Library
-	Window.Main = Main
-	Window.TopBar = TopBar
-	Window.Title = Title
-	Window.GameName = GameName
-	Window.TabHolder = TabHolder
-	
-	function Window:SetTitle(Text)
-		self.Title.Text = Text
-	end
-	
-	function Window:Destroy()
-		self.Instance:Destroy()
-	end
+	Main.Size = UDim2.new(0, 220, 0, 133)
+	TweenService:Create(Main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Config.Size or UDim2.new(0, 650, 0, 400),
+	}):Play()
 	
 	MakeDraggable(TopBar, Main)
+
+	-- Tabs
+	local CurrentTab
+
+	local UIListLayout = Instance.new("UIListLayout")
+	UIListLayout.Name = "UIListLayout"
+	UIListLayout.Parent = Tabs
+
+	function Window:Tab(Config)
+
+		local Tab = Instance.new("TextButton")
+		Tab.Name = "Tab"
+		Tab.Size = UDim2.new(1, 0, 0, 25)
+		Tab.BackgroundColor3 = Color3.new(0.156863, 0.156863, 0.156863)
+		Tab.BorderSizePixel = 0
+		Tab.BorderColor3 = Color3.new(0, 0, 0)
+		Tab.Text = Config.Name or "Tab"
+		Tab.TextColor3 = Color3.new(1, 1, 1)
+		Tab.TextSize = 15
+		Tab.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+		Tab.AutoButtonColor = false
+		Tab.Parent = Tabs
+
+		local UICorner5 = Instance.new("UICorner")
+		UICorner5.Name = "UICorner"
+		UICorner5.CornerRadius = UDim.new(0, 4)
+		UICorner5.Parent = Tab
+
+		Tab.MouseButton1Click:Connect(function()
+
+			if CurrentTab then
+				CurrentTab.BackgroundColor3 = Color3.new(0.156863, 0.156863, 0.156863)
+			end
+
+			Tab.BackgroundColor3 = Color3.new(0.509804, 0.705882, 1)
+			CurrentTab = Tab
+
+		end)
+
+		if not CurrentTab then
+			Tab.BackgroundColor3 = Color3.new(0.509804, 0.705882, 1)
+			CurrentTab = Tab
+		end
+
+	end
+
+	Window.Main = Main
+	Window.Title = Title
+	Window.GameName = GameName
 
 	return Window
 end
